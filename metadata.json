@@ -1,0 +1,6 @@
+{
+  "name": "Buzz Pilot — Content Laboratory",
+  "description": "Unified Content Marketing Lab driven by AI-generated insights, 50 viral frameworks, content calendar planning, PDF/CSV report exports, and real-time analytical diagnostics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
