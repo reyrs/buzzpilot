@@ -113,6 +113,50 @@ function getDeepSeekClient(): OpenAI {
   return aiInstance;
 }
 
+/**
+ * Safely parse JSON from AI response, handling markdown code block wrappers
+ * and other common LLM output quirks.
+ */
+function safeParseAIResponse(responseText: string): any {
+  if (!responseText || responseText.trim() === '') {
+    throw new Error('AI mengembalikan respons kosong.');
+  }
+
+  let cleaned = responseText.trim();
+
+  // Remove markdown code block fences: ```json ... ``` or ``` ... ```
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/g, '').trim();
+
+  // Try direct JSON parse first
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // If that fails, try to extract a JSON object from the text
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch {
+        // fall through to error
+      }
+    }
+
+    // Also try array extraction as fallback
+    const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      try {
+        return JSON.parse(arrayMatch[0]);
+      } catch {
+        // fall through to error
+      }
+    }
+
+    throw new Error(
+      `AI mengembalikan respons yang tidak valid. Respons mentah: ${responseText.slice(0, 200)}...`
+    );
+  }
+}
+
 // ============================================================
 // Server Startup
 // ============================================================
@@ -197,14 +241,11 @@ ${stepsGuide}`;
             content: systemPrompt
           }
         ],
-        response_format: { type: 'json_object' },
         temperature: 0.8,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      // Clean possible markdown wrappers if present
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
@@ -277,13 +318,11 @@ Balas HANYA dengan JSON:
       const response = await ai.chat.completions.create({
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
         temperature: 0.3,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
@@ -339,13 +378,11 @@ Balas HANYA dengan JSON:
       const response = await ai.chat.completions.create({
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
         temperature: 0.7,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
@@ -389,13 +426,11 @@ Balas HANYA dengan JSON:
       const response = await ai.chat.completions.create({
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
         temperature: 0.7,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
@@ -453,13 +488,11 @@ Balas HANYA dengan JSON:
       const response = await ai.chat.completions.create({
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
         temperature: 0.3,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
@@ -542,13 +575,11 @@ Susun rekomendasi taktis personalisasi ini dalam struktur JSON berikut (balas HA
             content: clientPrompt
           }
         ],
-        response_format: { type: 'json_object' },
         temperature: 0.7,
       });
 
       const responseText = response.choices[0]?.message?.content || '';
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const resultObj = JSON.parse(cleanJson);
+      const resultObj = safeParseAIResponse(responseText);
 
       res.json(resultObj);
     } catch (error: any) {
