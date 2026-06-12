@@ -59,6 +59,14 @@ const insightsLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const generalAiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Terlalu banyak permintaan AI. Silakan tunggu 1 menit.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ============================================================
 // DeepSeek Client
 // ============================================================
@@ -194,7 +202,7 @@ ${stepsGuide}`;
 });
 
 // --- AI Score ---
-app.post('/api/ai-score', async (req, res) => {
+app.post('/api/ai-score', generalAiLimiter, async (req, res) => {
   try {
     const { script, framework, caption, hashtags, hookType, partsTexts } = req.body;
     if (!script || !framework) {
@@ -240,8 +248,8 @@ BALAS HANYA JSON:
   }
 });
 
-// --- AI Calendar Plan (generate N days at a time) ---
-app.post('/api/ai-calendar-plan', async (req, res) => {
+// --- AI Calendar Plan ---
+app.post('/api/ai-calendar-plan', generalAiLimiter, async (req, res) => {
   try {
     const { month, year, startDay = 1, daysCount = 7, savedScripts, product, audience } = req.body;
     const ai = getDeepSeekClient();
@@ -276,7 +284,7 @@ BALAS HANYA JSON:
 });
 
 // --- AI Calendar Idea ---
-app.post('/api/ai-calendar-idea', async (req, res) => {
+app.post('/api/ai-calendar-idea', generalAiLimiter, async (req, res) => {
   try {
     const { product, audience, existingCalendar, date } = req.body;
     const ai = getDeepSeekClient();
@@ -311,7 +319,7 @@ BALAS HANYA JSON:
 });
 
 // --- AI Retention Prediction ---
-app.post('/api/ai-retention', async (req, res) => {
+app.post('/api/ai-retention', generalAiLimiter, async (req, res) => {
   try {
     const { script, framework, caption, hashtags, hookType } = req.body;
     if (!script) {
@@ -349,7 +357,7 @@ BALAS HANYA JSON:
 });
 
 // --- AI Caption Generator ---
-app.post('/api/ai-caption', async (req, res) => {
+app.post('/api/ai-caption', generalAiLimiter, async (req, res) => {
   try {
     const { script, product, audience, tone } = req.body;
     if (!script) {
@@ -383,7 +391,7 @@ BALAS HANYA JSON:
 });
 
 // --- AI Hashtag Recommender ---
-app.post('/api/ai-hashtags', async (req, res) => {
+app.post('/api/ai-hashtags', generalAiLimiter, async (req, res) => {
   try {
     const { script, caption, product, audience } = req.body;
     if (!script && !caption) {
