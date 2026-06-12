@@ -1119,13 +1119,12 @@ export default function App() {
 
       <nav className="sticky top-[64px] z-30 bg-white border-b border-[#e8e5df] flex items-center justify-start gap-1 overflow-x-auto px-6 whitespace-nowrap py-1 overscroll-contain">
         {[
-          { id: 'frameworks', label: '1. Framework List', count: FW.length, icon: Compass },
-          { id: 'builder', label: '2. Script Builder', icon: Layout },
-          { id: 'analyzer', label: '3. Real-time Scorer', icon: BarChart3 },
-          { id: 'saved', label: '4. Saved Portofolio', count: savedScripts.length, icon: Save },
-          { id: 'ai', label: 'AI Script Generator', icon: Sparkles, highlight: true },
-          { id: 'calendar', label: 'Campaign Calendar', icon: CalendarIcon },
-          { id: 'progress', label: 'Progress Overtime', icon: TrendingUp },
+          { id: 'frameworks', label: '1. Frameworks', count: FW.length, icon: Compass },
+          { id: 'builder', label: '2. Builder', icon: Layout },
+          { id: 'analyzer', label: '3. Scorer', icon: BarChart3 },
+          { id: 'ai', label: 'AI Generator', icon: Sparkles, highlight: true },
+          { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
+          { id: 'saved', label: 'Portfolio', count: savedScripts.length, icon: Save },
         ].map((tab: any) => {
           const Icon = tab.icon;
           return (

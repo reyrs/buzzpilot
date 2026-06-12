@@ -2,93 +2,45 @@
 
 @layer base {
   :root {
-    --white: #ffffff;
-    --off: #f8f7f4;
-    --off2: #f2f0ec;
-    --border: #e8e5df;
-    --border2: #d8d4cc;
-    --ink: #1a1814;
-    --ink2: #5a5650;
-    --ink3: #9b9690;
-    --ink4: #c4bfb8;
-
-    /* Funnels & Categories Pastel Palettes */
-    --tof: #22c897;         /* green */
-    --tof-pill: #e6f9f4;
-    --tof-border: #b3edde;
-    --mof: #f0921a;         /* amber */
-    --mof-pill: #fef3e2;
-    --mof-border: #fbd49a;
-    --bof: #e8476a;         /* coral */
-    --bof-pill: #fdeef2;
-    --bof-border: #f4b0bf;
-
-    /* Accent Modern Lavender */
-    --accent: #7b68ee;
-    --accent-pill: #eeebff;
-    --accent-border: #cdc6f9;
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --ink: #111827;
+    --ink2: #6b7280;
+    --ink3: #9ca3af;
+    --accent: #7c3aed;
     --accent-light: #f5f3ff;
-
-    /* Status colors */
-    --good: #16a34a;
-    --good-bg: #f0fdf4;
-    --good-border: #86efac;
-    --warn: #d97706;
-    --warn-bg: #fffbeb;
-    --warn-border: #fcd34d;
-    --bad: #dc2626;
-    --bad-bg: #fef2f2;
-    --bad-border: #fca5a5;
-
-    --radius-sm: 8px;
-    --radius: 14px;
-    --radius-lg: 20px;
-    --radius-pill: 100px;
+    --accent-border: #ddd6fe;
+    --tof: #10b981;
+    --tof-pill: #ecfdf5;
+    --mof: #f59e0b;
+    --mof-pill: #fffbeb;
+    --bof: #ef4444;
+    --bof-pill: #fef2f2;
+    --radius: 16px;
+    --radius-sm: 10px;
   }
 
   .dark {
-    --white: #1e1b18;          /* dark element bg */
-    --off: #12100e;            /* dark page background */
-    --off2: #1c1916;           /* dark input/secondary bg */
-    --border: #2e2a24;         /* dark border */
-    --border2: #3d3830;        /* dark border highlight */
-    --ink: #f5f3ef;            /* light text */
-    --ink2: #c4bfb8;           /* light muted text */
-    --ink3: #9b9690;           /* darker text */
-    --ink4: #5a5650;           /* even darker text */
-
-    /* Let's also adjust the pill styles slightly so they aren't super bright inside dark background */
-    --tof-pill: #132d26;
-    --tof-border: #165c49;
-    --mof-pill: #2e200a;
-    --mof-border: #6d4610;
-    --bof-pill: #2d1318;
-    --bof-border: #6f2134;
-
-    --accent-pill: #1b163d;
-    --accent-border: #3f367e;
-    --accent-light: #16122d;
-
-    --good-bg: #122a1c;
-    --good-border: #1a5c32;
-    --warn-bg: #2a1f0a;
-    --warn-border: #63430c;
-    --bad-bg: #2e1212;
-    --bad-border: #651717;
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --border: #27272a;
+    --ink: #fafafa;
+    --ink2: #a1a1aa;
+    --ink3: #71717a;
+    --accent-light: #1c1a2e;
+    --accent-border: #3b3680;
+    --tof-pill: #0f2e20;
+    --mof-pill: #2a200e;
+    --bof-pill: #2e1212;
   }
 
   body {
-    font-family: 'DM Sans', sans-serif;
-    background-color: var(--off);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
     color: var(--ink);
-    background-image: radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px);
-    background-size: 24px 24px;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.2s, color 0.2s;
-  }
-
-  .dark body {
-    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px) !important;
   }
 }
 
@@ -194,24 +146,15 @@
   border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Dark mode overrides for explicit color utility classes */
-.dark .bg-white, .dark .bg-\[white\] {
-  background-color: var(--white) !important;
-}
-.dark .bg-\[\#f8f7f4\] {
-  background-color: var(--off) !important;
-}
-.dark .bg-\[\#fbfbf9\] {
-  background-color: var(--off2) !important;
-}
-.dark .bg-\[\#f2f0ec\] {
-  background-color: var(--off2) !important;
+/* Dark mode overrides untuk kompatibilitas */
+.dark .bg-white {
+  background-color: var(--card) !important;
 }
 .dark .bg-\[\#f5f3ff\] {
   background-color: var(--accent-light) !important;
 }
 .dark .bg-\[\#eeebff\] {
-  background-color: var(--accent-pill) !important;
+  background-color: var(--accent-light) !important;
 }
 .dark .bg-\[\#e6f9f4\] {
   background-color: var(--tof-pill) !important;
@@ -222,16 +165,6 @@
 .dark .bg-\[\#fdeef2\] {
   background-color: var(--bof-pill) !important;
 }
-.dark .bg-\[\#f0fdf4\] {
-  background-color: var(--good-bg) !important;
-}
-.dark .bg-\[\#fffbeb\] {
-  background-color: var(--warn-bg) !important;
-}
-.dark .bg-\[\#fef2f2\] {
-  background-color: var(--bad-bg) !important;
-}
-
 .dark .text-\[\#1a1814\] {
   color: var(--ink) !important;
 }
@@ -241,42 +174,14 @@
 .dark .text-\[\#9b9690\] {
   color: var(--ink3) !important;
 }
-.dark .text-\[\#c4bfb8\] {
-  color: var(--ink4) !important;
-}
-.dark .text-\[\#7a7a72\] {
-  color: var(--ink3) !important;
-}
-
 .dark .border-\[\#e8e5df\] {
   border-color: var(--border) !important;
 }
 .dark .border-b-\[\#e8e5df\] {
   border-bottom-color: var(--border) !important;
 }
-.dark .border-\[\#d8d4cc\] {
-  border-color: var(--border2) !important;
-}
 .dark .border-\[\#cdc6f9\] {
   border-color: var(--accent-border) !important;
-}
-.dark .border-\[\#b3edde\] {
-  border-color: var(--tof-border) !important;
-}
-.dark .border-\[\#fbd49a\] {
-  border-color: var(--mof-border) !important;
-}
-.dark .border-\[\#f4b0bf\] {
-  border-color: var(--bof-border) !important;
-}
-.dark .border-\[\#86efac\] {
-  border-color: var(--good-border) !important;
-}
-.dark .border-\[\#fcd34d\] {
-  border-color: var(--warn-border) !important;
-}
-.dark .border-\[\#fca5a5\] {
-  border-color: var(--bad-border) !important;
 }
 
 /* ══ SCORE ANIMATIONS ══ */
