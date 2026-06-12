@@ -122,6 +122,19 @@ export default function App() {
   };
 
   // --- INITIALIZE & FETCH ENVIRONMENT ---
+  // Listen for onboarding navigation events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const tab = customEvent.detail;
+      if (tab === 'frameworks' || tab === 'builder' || tab === 'analyzer' || tab === 'ai' || tab === 'calendar') {
+        setActiveTab(tab);
+      }
+    };
+    window.addEventListener('navigate-tab', handler);
+    return () => window.removeEventListener('navigate-tab', handler);
+  }, []);
+
   useEffect(() => {
     const fetchEnvStatus = async () => {
       try {
