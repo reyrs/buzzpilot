@@ -1447,6 +1447,75 @@ export default function App() {
                           </button>
                         </div>
 
+                        {/* AI Hashtag Recommender Button */}
+                        <button
+                          onClick={async () => {
+                            if (!scriptText.trim()) {
+                              launchToast('Tulis script dulu sebelum generate hashtag AI!');
+                              return;
+                            }
+                            try {
+                              const r = await fetch('/api/ai-hashtags', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  script: scriptText,
+                                  caption: captionText,
+                                  product: profileProduct || aiProduct || '',
+                                  audience: profileAudience || aiAudience || '',
+                                }),
+                              });
+                              const data = await r.json();
+                              if (data.error) throw new Error(data.error);
+                              if (data.hashtags && Array.isArray(data.hashtags)) {
+                                setSelectedHashtags(prev => {
+                                  const combined = [...prev, ...data.hashtags];
+                                  return [...new Set(combined)];
+                                });
+                                launchToast(`✨ AI menambahkan ${data.hashtags.length} hashtag!`);
+                              }
+                            } catch (err: any) {
+                              launchToast('Gagal generate hashtag AI: ' + (err.message || ''));
+                            }
+                          }}
+                          className="bg-gradient-to-r from-[#22c897] to-[#1bb386] text-white px-4 py-1.5 rounded-full text-xs font-bold hover:shadow-md"
+                        >
+                          ✨ AI Rekomendasi Hashtag
+                        </button>
+
+                        {/* AI Caption Generator Button */}
+                        <button
+                          onClick={async () => {
+                            if (!scriptText.trim()) {
+                              launchToast('Tulis script dulu sebelum generate caption AI!');
+                              return;
+                            }
+                            try {
+                              const r = await fetch('/api/ai-caption', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  script: scriptText,
+                                  product: profileProduct || aiProduct || '',
+                                  audience: profileAudience || aiAudience || '',
+                                  tone: aiTone,
+                                }),
+                              });
+                              const data = await r.json();
+                              if (data.error) throw new Error(data.error);
+                              if (data.captions && Array.isArray(data.captions) && data.captions.length > 0) {
+                                setCaptionText(data.captions[0]);
+                                launchToast(`📝 AI Caption siap! ${data.captions.length} varian tersedia.`);
+                              }
+                            } catch (err: any) {
+                              launchToast('Gagal generate caption AI: ' + (err.message || ''));
+                            }
+                          }}
+                          className="bg-gradient-to-r from-[#7b68ee] to-[#6855dd] text-white px-4 py-1.5 rounded-full text-xs font-bold hover:shadow-md"
+                        >
+                          📝 AI Generate Caption
+                        </button>
+
                         {/* Selected hashtags container */}
                         {selectedHashtags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 bg-[#fbfbf9] p-3 rounded-xl border border-[#e8e5df]">
@@ -2016,7 +2085,7 @@ export default function App() {
                   className="bg-gradient-to-r from-[#7b68ee] to-[#6855dd] text-white px-5 py-2.5 rounded-full font-bold text-xs hover:shadow-md transition-all flex items-center gap-1.5 btn disabled:opacity-50"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  {aiCalendarLoading ? 'AI Menyusun...' : '🧠 AI Rencana 30 Hari'}
+                  {aiCalendarLoading ? 'AI Menyusun...' : '🧠 AI Rencana Bulanan (Bertahap)'}
                 </button>
                 <button 
                   onClick={autoFillOptimalCalendar}

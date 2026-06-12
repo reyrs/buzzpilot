@@ -348,6 +348,74 @@ BALAS HANYA JSON:
   }
 });
 
+// --- AI Caption Generator ---
+app.post('/api/ai-caption', async (req, res) => {
+  try {
+    const { script, product, audience, tone } = req.body;
+    if (!script) {
+      return res.status(400).json({ error: 'Script is required' });
+    }
+
+    const ai = getDeepSeekClient();
+
+    const prompt = `Buat 3 caption TikTok/Reels untuk script berikut.
+Produk: ${product || '-'}
+Audiens: ${audience || '-'}
+Tone: ${tone || 'edukatif'}
+Script: ${script.slice(0, 500)}
+
+BALAS HANYA JSON:
+{"captions":["Caption 1 ~150-250 karakter","Caption 2","Caption 3"]}`;
+
+    const response = await ai.chat.completions.create({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+    });
+
+    const responseText = response.choices[0]?.message?.content || '';
+    const resultObj = safeParseAIResponse(responseText);
+    res.json(resultObj);
+  } catch (error: any) {
+    console.error('Error in /api/ai-caption:', error);
+    res.status(500).json({ error: error.message || 'Fatal error during AI caption generation.' });
+  }
+});
+
+// --- AI Hashtag Recommender ---
+app.post('/api/ai-hashtags', async (req, res) => {
+  try {
+    const { script, caption, product, audience } = req.body;
+    if (!script && !caption) {
+      return res.status(400).json({ error: 'Script or caption is required' });
+    }
+
+    const ai = getDeepSeekClient();
+    const textSample = (script || caption || '').slice(0, 300);
+
+    const prompt = `Beri 10 hashtag TikTok untuk konten berikut.
+Produk: ${product || '-'}
+Audiens: ${audience || '-'}
+Konten: ${textSample}
+
+BALAS HANYA JSON:
+{"hashtags":["#hashtag1","#hashtag2","#hashtag3","#hashtag4","#hashtag5","#hashtag6","#hashtag7","#hashtag8","#hashtag9","#hashtag10"],"categories":["Mega","Medium","Niche"]}`;
+
+    const response = await ai.chat.completions.create({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.5,
+    });
+
+    const responseText = response.choices[0]?.message?.content || '';
+    const resultObj = safeParseAIResponse(responseText);
+    res.json(resultObj);
+  } catch (error: any) {
+    console.error('Error in /api/ai-hashtags:', error);
+    res.status(500).json({ error: error.message || 'Fatal error during AI hashtag generation.' });
+  }
+});
+
 // --- Personalized Insights ---
 app.post('/api/personalized-insights', insightsLimiter, async (req, res) => {
   try {
