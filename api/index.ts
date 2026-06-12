@@ -209,48 +209,21 @@ app.post('/api/ai-score', async (req, res) => {
       ? partsTexts.map((t: string, i: number) => `Step ${i + 1}: "${t}"`).join('\n')
       : 'Not provided';
 
-    const prompt = `Kamu adalah AI Script Analyzer untuk konten TikTok/Reels. Analisis script berikut secara kritis dan beri skor.
+    const prompt = `Kamu adalah AI Script Analyzer. Analisis script TikTok/Reels berikut secara kritis.
 
 Framework: "${framework.name}" (${framework.funnel.toUpperCase()})
-Steps Framework:
-${stepsContext || 'N/A'}
+Steps: ${stepsContext || 'N/A'}
+Isian: ${partsContext}
+Caption: ${caption || '-'}
+Hashtags: ${hashtags ? hashtags.join(', ') : '-'}
+Hook: ${hookType || '-'}
 
-Isian Per-Step:
-${partsContext}
-
-Caption Terkait: ${caption || 'Tidak ada'}
-Hashtags: ${hashtags ? hashtags.join(', ') : 'Tidak ada'}
-Hook Type: ${hookType || 'Tidak dipilih'}
-
-SCRIPT YANG DIANALISIS:
-"""
+SCRIPT:
 ${script}
-"""
 
-Beri skor 0-100 untuk setiap kategori berikut berdasarkan analisis teks nyata (bukan tebakan):
-1. Hook Strength (0-100): Apakah 3 detik pertama cukup kuat menarik perhatian? Analisis trigger words, pertanyaan, kejutan.
-2. Readability (0-100): Apakah struktur kalimat mudah dicerna? Panjang kalimat, variasi, alur baca.
-3. SEO & Keyword Optimization (0-100): Apakah ada kata kunci yang relevan? Cocok dengan caption dan hashtag?
-4. Emotional Engagement (0-100): Apakah ada kata-kata emosi yang kuat? Apakah audiens akan merasa tersentuh?
-5. CTA Persuasiveness (0-100): Apakah ajakan bertindak jelas dan meyakinkan? Apakah posisinya strategis?
-
-Kritik dengan jujur. Beri skor rendah jika memang kurang.
-
-Balas HANYA dengan JSON:
-{
-  "aiHookScore": number 0-100,
-  "aiReadScore": number 0-100,
-  "aiSeoScore": number 0-100,
-  "aiEmotionScore": number 0-100,
-  "aiCtaScore": number 0-100,
-  "aiOverall": number 0-100,
-  "feedback": "Ringkasan 1-2 kalimat tentang kualitas script ini",
-  "suggestions": ["Saran konkret 1", "Saran konkret 2", "Saran konkret 3"],
-  "hookAnalysis": "Analisis hook: apa yang kurang/baik",
-  "readabilityAnalysis": "Analisis readability: apakah mudah dibaca?",
-  "emotionAnalysis": "Analisis emosi: apa yang bisa ditingkatkan?",
-  "ctaAnalysis": "Analisis CTA: apakah cukup persuasif?"
-}`;
+Beri skor 0-100 untuk: hookStrength, readability, seo, emotion, cta, overall.
+BALAS HANYA JSON:
+{"aiHookScore":0,"aiReadScore":0,"aiSeoScore":0,"aiEmotionScore":0,"aiCtaScore":0,"aiOverall":0,"feedback":"...","suggestions":["..."],"hookAnalysis":"...","readabilityAnalysis":"...","emotionAnalysis":"...","ctaAnalysis":"..."}`;
 
     const response = await ai.chat.completions.create({
       model: 'deepseek-chat',
@@ -267,49 +240,25 @@ Balas HANYA dengan JSON:
   }
 });
 
-// --- AI Calendar Plan ---
+// --- AI Calendar Plan (generate N days at a time) ---
 app.post('/api/ai-calendar-plan', async (req, res) => {
   try {
-    const { month, year, savedScripts, product, audience } = req.body;
+    const { month, year, startDay = 1, daysCount = 7, savedScripts, product, audience } = req.body;
     const ai = getDeepSeekClient();
 
     const scriptsContext = savedScripts && savedScripts.length > 0
-      ? savedScripts.map((s: any) => `${s.title}: ${s.framework?.name} (Score: ${s.scores?.overall || 'N/A'})`).join('\n')
-      : 'Belum ada script tersimpan.';
+      ? savedScripts.map((s: any) => `${s.title}: ${s.framework?.name}`).join(', ')
+      : 'Kosong';
 
-    const prompt = `Kamu adalah AI Content Strategist. Buat rencana konten 30 hari untuk bulan ${month} ${year}.
+    const endDay = startDay + daysCount - 1;
+    const prompt = `Buat rencana konten hari ${startDay}-${endDay} ${month} ${year}.
+Produk: ${product || '-'}
+Audiens: ${audience || '-'}
+Riwayat: ${scriptsContext}
+Aturan: 45% TOF, 30% MOF, 25% BOF. Setiap hari framework berbeda.
 
-Profil Pengguna:
-- Produk: ${product || 'Belum ditentukan'}
-- Audiens: ${audience || 'Belum ditentukan'}
-
-Riwayat konten sebelumnya (referensi untuk menghindari repetisi):
-${scriptsContext}
-
-Buat 30 hari rencana dengan struktur:
-- Hari 1-30
-- 45% TOF (Top of Funnel) untuk awareness
-- 30% MOF (Middle of Funnel) untuk kredibilitas
-- 25% BOF (Bottom of Funnel) untuk konversi
-
-Setiap hari harus punya framework berbeda. Gunakan variasi dari 50 framework pemasaran yang ada (seperti Problem-Agitate-Solution, Before-After-Bridge, AIDA, PAS, dll).
-
-Balas HANYA dengan JSON:
-{
-  "month": "${month}",
-  "year": ${year},
-  "days": [
-    {
-      "day": 1,
-      "date": "YYYY-MM-DD",
-      "frameworkName": "Nama Framework",
-      "funnel": "tof/mof/bof",
-      "suggestedHook": "Contoh hook untuk hari ini",
-      "contentIdea": "Ide konten spesifik untuk hari ini",
-      "reason": "Kenapa konten ini cocok"
-    }
-  ]
-}`;
+BALAS HANYA JSON:
+{"month":"${month}","year":${year},"days":[{"day":${startDay},"date":"YYYY-MM-DD","frameworkName":"...","funnel":"tof/mof/bof","suggestedHook":"...","contentIdea":"Ide","reason":"..."}]}`;
 
     const response = await ai.chat.completions.create({
       model: 'deepseek-chat',
@@ -338,25 +287,13 @@ app.post('/api/ai-calendar-idea', async (req, res) => {
           .slice(-7).join('\n')
       : 'Belum ada jadwal terisi.';
 
-    const prompt = `Kamu adalah AI Content Strategist. Beri ide konten untuk tanggal ${date}.
+    const prompt = `Ide konten untuk ${date}.
+Produk: ${product || '-'}
+Audiens: ${audience || '-'}
+Jadwal 7 hari terakhir: ${calendarContext}
 
-Profil:
-- Produk: ${product || 'Umum'}
-- Audiens: ${audience || 'Umum'}
-
-Jadwal 7 hari terakhir yang sudah terisi (hindari repetisi):
-${calendarContext}
-
-Beri 1 ide konten spesifik yang fresh dan sesuai dengan funnel yang cocok.
-Balas HANYA dengan JSON:
-{
-  "frameworkName": "Nama framework terbaik",
-  "funnel": "tof/mof/bof",
-  "hookType": "Tipe hook yang cocok",
-  "contentIdea": "Ide konten 1-2 kalimat",
-  "estimatedScore": 0-100,
-  "tip": "Saran eksekusi"
-}`;
+BALAS HANYA JSON:
+{"frameworkName":"...","funnel":"tof/mof/bof","hookType":"...","contentIdea":"Ide konten","estimatedScore":80,"tip":"Saran"}`;
 
     const response = await ai.chat.completions.create({
       model: 'deepseek-chat',
@@ -383,41 +320,18 @@ app.post('/api/ai-retention', async (req, res) => {
 
     const ai = getDeepSeekClient();
 
-    const prompt = `Kamu adalah AI Content Retention Analyst. Analisis script TikTok/Reels berikut dan prediksi retention rate (persentase penonton yang bertahan) di setiap detik.
-
-Framework: "${framework?.name || 'N/A'}" (${framework?.funnel?.toUpperCase() || 'N/A'})
-Caption: ${caption || 'Tidak ada'}
-Hashtags: ${hashtags ? hashtags.join(', ') : 'Tidak ada'}
-Hook Type: ${hookType || 'Tidak dipilih'}
+    const prompt = `Analisis retention script TikTok/Reels.
+Framework: "${framework?.name || '-'}" (${framework?.funnel?.toUpperCase() || '-'})
+Caption: ${caption || '-'}
+Hashtags: ${hashtags ? hashtags.join(', ') : '-'}
+Hook: ${hookType || '-'}
 
 SCRIPT:
-"""
 ${script}
-"""
 
-Analisis secara kritis:
-1. **Detik 0-3 (Hook)**: Apakah hook cukup kuat? Prediksi berapa % penonton bertahan setelah hook.
-2. **Detik 3-15**: Apakah konten engaging? Apakah ada value yang bikin orang tetap nonton?
-3. **Detik 15-30**: Apakah ada emotional hooks, storytelling, atau informasi baru?
-4. **Detik 30-45**: Apakah audiens masih terlibat? Atau mulai boring?
-5. **Detik 45-60**: Apakah CTA cukup kuat untuk bikin orang bertahan sampai akhir?
-
-Beri 7 data point prediksi retention di detik: 0, 3, 10, 20, 30, 45, 60
-Retention di detik 0 harus 100. Semakin rendah skor hook/readability/emotion/CTA, semakin tajam drop-nya.
-
-Balas HANYA dengan JSON:
-{
-  "points": [
-    { "second": 0, "retention": 100 },
-    { "second": 3, "retention": 70-90 },
-    { "second": 10, "retention": 50-80 },
-    { "second": 20, "retention": 40-70 },
-    { "second": 30, "retention": 30-60 },
-    { "second": 45, "retention": 20-50 },
-    { "second": 60, "retention": 10-40 }
-  ],
-  "analysis": "Penjelasan singkat 1-2 kalimat tentang pola retention script ini, misal: 'Hook cukup kuat, tapi retention turun drastis di detik 15-20 karena kurang emotional trigger. CTA di akhir cukup membantu.'"
-}`;
+Beri prediksi retention di detik 0,3,10,20,30,45,60.
+BALAS HANYA JSON:
+{"points":[{"second":0,"retention":100},{"second":3,"retention":80},{"second":10,"retention":60},{"second":20,"retention":50},{"second":30,"retention":40},{"second":45,"retention":30},{"second":60,"retention":20}],"analysis":"..."}`;
 
     const response = await ai.chat.completions.create({
       model: 'deepseek-chat',
@@ -448,53 +362,20 @@ app.post('/api/personalized-insights', insightsLimiter, async (req, res) => {
     const { savedScripts, profileInfo } = parseResult.data;
     const ai = getDeepSeekClient();
 
-    let scriptsContext = 'Belum ada riwayat script tersimpan.';
+    let scriptsContext = 'Belum ada riwayat.';
     if (savedScripts && savedScripts.length > 0) {
-      scriptsContext = savedScripts.map((s: any, idx: number) => {
-        return `Script #${idx + 1}:
-Judul: ${s.title}
-Framework: ${s.framework?.name} (${s.framework?.funnel})
-Analytics Score: Overall ${s.scores?.overall || 0}/100 [Hook: ${s.scores?.hookScore || 0}, Readability: ${s.scores?.readScore || 0}, SEO: ${s.scores?.seoScore || 0}, Emotion: ${s.scores?.emotionScore || 0}, CTA: ${s.scores?.ctaScore || 0}]
-Script Text: "${s.script?.slice(0, 150) || ''}..."`;
-      }).join('\n\n');
+      scriptsContext = savedScripts.map((s: any, idx: number) =>
+        `#${idx+1}: ${s.title} (${s.framework?.name}) Score: ${s.scores?.overall || 0}`
+      ).join('\n');
     }
 
-    const clientPrompt = `Kamu adalah Konsultan Strategi Konten Senior AI. Tugasmu adalah menganalisis portofolio draf konten pengguna untuk memberikan DIAGNOSTIK KEPRIBADIAN KONTEN (Personalized Analytics Insight) yang bertenaga AI.
-
-Berikut data rincian portofolio script pengguna saat ini:
+    const clientPrompt = `Analisis portofolio konten pengguna:
 ${scriptsContext}
+Produk: ${profileInfo?.product || '-'}
+Audiens: ${profileInfo?.audience || '-'}
 
-Detail Tambahan Pengguna:
-Target Segmen / Niche Produk: ${profileInfo?.product || 'Umum'}
-Deskripsi Target Audience: ${profileInfo?.audience || 'Umum'}
-
-Susun rekomendasi taktis personalisasi ini dalam struktur JSON berikut (balas HANYA objek JSON ini):
-{
-  "generalScoreText": "Deskripsi singkat tingkat kemahiran konten pengguna berdasarkan data di atas (misal: 'Sangat Berfokus Pada Hook tapi Kurang CTA')",
-  "contentFunnelBalance": {
-    "tofPct": 50,
-    "mofPct": 30,
-    "bofPct": 20,
-    "diagnosisText": "Ulasan seputar keseimbangan distribusi funnel konten pendek pengguna"
-  },
-  "strengths": [
-    "Kelebihan utama draf naskah mereka (misal: 'Pemilihan kata emosi kuat', 'Opening memikat')"
-  ],
-  "gaps": [
-    "Celah pertumbuhan / kekurangan krusial (misal: 'Rata-rata kalimat di readability terlalu panjang', 'CTA kurang persuasif')"
-  ],
-  "recommendations": [
-    {
-      "title": "Judul Taktis Rekomendasi",
-      "action": "Tindakan konkret nyata untuk dipraktekkan hari ini juga",
-      "priority": "Tinggi / Sedang"
-    }
-  ],
-  "aiRecommendedAvenue": {
-    "recommendedFramework": "Rekomendasi nama salah satu dari 50 framework pemasaran (e.g., Before-After-Bridge, Problem-Agitate-Solve) yang paling tepat pengguna lakukan selanjutnya",
-    "themeConcept": "Konsep ide konten spesifik berdasarkan target audiens dan produk pengguna untuk dieksekusi selanjutnya"
-  }
-}`;
+BALAS HANYA JSON:
+{"generalScoreText":"...","contentFunnelBalance":{"tofPct":50,"mofPct":30,"bofPct":20,"diagnosisText":"..."},"strengths":["..."],"gaps":["..."],"recommendations":[{"title":"...","action":"...","priority":"Tinggi"}],"aiRecommendedAvenue":{"recommendedFramework":"...","themeConcept":"..."}}`;
 
     const response = await ai.chat.completions.create({
       model: 'deepseek-chat',

@@ -623,36 +623,52 @@ export default function App() {
     setAiCalendarLoading(true);
     try {
       const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-      const r = await fetch('/api/ai-calendar-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          month: monthNames[calMonth],
-          year: calYear,
-          savedScripts,
-          product: profileProduct || 'Belum ditentukan',
-          audience: profileAudience || 'Belum ditentukan',
-        }),
-      });
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-      
-      if (data.days && Array.isArray(data.days)) {
-        const updated = { ...calendarData };
-        data.days.forEach((day: any) => {
-          if (day.date) {
-            updated[day.date] = {
-              fwId: 0,
-              fwName: day.frameworkName,
-              title: day.contentIdea,
-              funnel: day.funnel,
-              note: `🎯 ${day.suggestedHook}\n💡 ${day.reason}`,
-            };
-          }
+      const totalDays = getDaysInMonth(calYear, calMonth);
+      const batchSize = 7;
+      const updated = { ...calendarData };
+      let successCount = 0;
+
+      for (let startDay = 1; startDay <= totalDays; startDay += batchSize) {
+        const daysCount = Math.min(batchSize, totalDays - startDay + 1);
+        
+        const r = await fetch('/api/ai-calendar-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            month: monthNames[calMonth],
+            year: calYear,
+            startDay,
+            daysCount,
+            savedScripts,
+            product: profileProduct || 'Belum ditentukan',
+            audience: profileAudience || 'Belum ditentukan',
+          }),
         });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        
+        if (data.days && Array.isArray(data.days)) {
+          data.days.forEach((day: any) => {
+            if (day.date) {
+              updated[day.date] = {
+                fwId: 0,
+                fwName: day.frameworkName,
+                title: day.contentIdea,
+                funnel: day.funnel,
+                note: `🎯 ${day.suggestedHook}\n💡 ${day.reason}`,
+              };
+            }
+          });
+          successCount += data.days.length;
+        }
+      }
+
+      if (successCount > 0) {
         localStorage.setItem('buzzpilot_calendar', JSON.stringify(updated));
         setCalendarData(updated);
-        launchToast(`✅ Rencana 30 hari oleh AI untuk ${monthNames[calMonth]} ${calYear} berhasil diisi!`);
+        launchToast(`✅ Rencana ${successCount} hari oleh AI untuk ${monthNames[calMonth]} ${calYear} berhasil diisi!`);
+      } else {
+        launchToast('AI gagal menghasilkan rencana. Coba lagi.');
       }
     } catch (err: any) {
       launchToast('Gagal membuat rencana AI: ' + (err.message || 'Unknown error'));
