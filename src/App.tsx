@@ -1068,7 +1068,56 @@ export default function App() {
       </header>
 
       {/* HORIZONTAL PAGE SUB-HEADER NAVIGATION */}
-      <nav className="sticky top-[64px] z-30 bg-white border-b border-[#e8e5df] flex items-center justify-start gap-1 overflow-x-auto px-6 whitespace-nowrap py-1">
+      {/* Welcome Banner - shows only on frameworks tab */}
+      {activeTab === 'frameworks' && (
+        <div className="bg-gradient-to-br from-[#7b68ee] to-[#6855dd] text-white rounded-3xl p-8 mb-8 shadow-lg">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-3 py-1 bg-white/20 rounded-full text-[11px] font-bold uppercase tracking-widest">
+                  🚀 AI Content Marketing Lab
+                </span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold font-['Syne'] leading-tight">
+                Buat Konten Viral dengan <span className="text-[#fbbf24]">AI + 50 Framework</span>
+              </h2>
+              <p className="text-white/80 mt-3 max-w-[600px] text-sm md:text-base leading-relaxed">
+                Generate script TikTok/Reels, score real-time, analisis retention, dan rencanakan campaign 30 hari — semua dalam satu tools berbasis AI.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button
+                  onClick={() => gotoPage('builder')}
+                  className="bg-white text-[#7b68ee] px-6 py-2.5 rounded-full font-bold text-sm hover:shadow-xl transition-all btn"
+                >
+                  🎯 Mulai Buat Script
+                </button>
+                <button
+                  onClick={() => gotoPage('ai')}
+                  className="bg-white/20 text-white border border-white/30 px-6 py-2.5 rounded-full font-bold text-sm hover:bg-white/30 transition-all btn"
+                >
+                  🤖 Coba AI Generator
+                </button>
+              </div>
+            </div>
+            <div className="hidden md:grid grid-cols-2 gap-3 shrink-0">
+              {[
+                { icon: '🧠', label: '50+ Framework', sub: 'Blueprint viral' },
+                { icon: '🤖', label: 'AI Generate', sub: 'Script instan' },
+                { icon: '📊', label: 'Real-time Score', sub: 'Analisis lengkap' },
+                { icon: '📅', label: 'Kalender 30 Hari', sub: 'Rencana campaign' },
+              ].map((item, i) => (
+                <div key={i} className="bg-white/10 rounded-2xl p-4 border border-white/10 text-center">
+                  <div className="text-2xl mb-1">{item.icon}</div>
+                  <div className="text-sm font-bold">{item.label}</div>
+                  <div className="text-[11px] text-white/60">{item.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <nav className="sticky top-[64px] z-30 bg-white border-b border-[#e8e5df] flex items-center justify-start gap-1 overflow-x-auto px-6 whitespace-nowrap py-1 overscroll-contain">
         {[
           { id: 'frameworks', label: '1. Framework List', count: FW.length, icon: Compass },
           { id: 'builder', label: '2. Script Builder', icon: Layout },
